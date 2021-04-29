@@ -1,0 +1,50 @@
+service: crypto-notification
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  lambdaHashingVersion: 20201221
+
+  stage: prod
+  region: us-east-1
+
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "sns:Publish"
+          Resource: "*"
+
+layers:
+  nodemodules:
+    path: node_modules
+
+package:
+  patterns:
+    - 'src/**'
+    - '!package**'
+    - '!README.md'
+
+functions:
+  deltachecker:
+    handler: src/deltachecker.handler
+    layers:
+      - {Ref: NodemodulesLambdaLayer}
+    events:
+      - schedule: rate(10 minutes)
+
+resources:
+  Resources:
+    CrpytoNotificationTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: CrpytoNotificationTopic
+  # Outputs:
+  #   NodemodulesLambdaLayer:
+  #       Value:
+  #         Ref: NodemodulesLambdaLayer
+  #       Export:
+  #         Name: NodemodulesLambdaLayer

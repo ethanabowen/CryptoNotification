@@ -1,0 +1,29 @@
+{
+  "name": "crypto-notification",
+  "version": "1.0.0",
+  "description": "CryptoNotification",
+  "main": "coinbase_price_delta_notification.js",
+  "dependencies": {
+    "aws-sdk": "*",
+    "coinbase-pro": "*"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ethanabowen/CryptoNotification.git"
+  },
+  "keywords": [
+    "CoinBase",
+    "Crypto",
+    "StopLoss"
+  ],
+  "author": "Ethan Bowen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ethanabowen/CryptoNotification/issues"
+  },
+  "homepage": "https://github.com/ethanabowen/CryptoNotification#readme"
+}
