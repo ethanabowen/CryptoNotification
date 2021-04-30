@@ -32,7 +32,7 @@ module.exports.handler = async (event, context) => {
           const message = cryptoNotificationFactory.buildMessage(currencyPair, priceDelta, currentPrice, historicPrice);
           const subject = cryptoNotificationFactory.buildSubject(currencyPair);
 
-          snsUtils.sendDeltaNotification(subject, message, Constants.NOTIFICATION_TOPIC_ARN);
+          snsUtils.sendDeltaNotification(currencyPair, subject, message, Constants.NOTIFICATION_TOPIC_ARN);
         } else {
           console.info(`${currencyPair} Notification NOT Sent! Delta: ${priceDelta}%`)
         }
@@ -51,7 +51,7 @@ module.exports.handler = async (event, context) => {
  */
 function shouldSendNotification(currentPrice, historicPrice, thresholdPercentage) {
   var currentPriceDelta = getCurrentPriceDelta(currentPrice, historicPrice)
-  return currentPriceDelta < 0 && Math.abs(currentPriceDelta) >= thresholdPercentage;
+  return currentPriceDelta < 0 && Math.abs(currentPriceDelta) >= thresholdPercentage / 100;
 }
 
 /**
