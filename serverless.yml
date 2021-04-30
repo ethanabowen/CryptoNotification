@@ -16,11 +16,7 @@ provider:
         - Effect: "Allow"
           Action:
             - "sns:Publish"
-          Resource: "arn:aws:sns:us-east-1:${self.custom.accountId}:${self.resources.Resources.CrpytoNotificationTopic.Properties.TopicName}"
-
-custom:
-  accountId: 859700905691
-
+          Resource: "arn:aws:sns:us-east-1:859700905691:CrpytoNotificationTopic" # TODO: Update this to be dynamic
 layers:
   nodeModules:
     path: layer
@@ -41,7 +37,8 @@ functions:
     events:
       - schedule: rate(10 minutes)
     environment:
-      NOTIFICATION_TOPIC_ARN: "arn:aws:sns:us-east-1:${self.custom.accountId}:${self.resources.Resources.CrpytoNotificationTopic.Properties.TopicName}"
+        DEBUG_LOGGING_ENABLED: true
+        NOTIFICATION_TOPIC_ARN: "arn:aws:sns:us-east-1:859700905691:CrpytoNotificationTopic" # TODO: Update this to be dynamic
 
 resources:
   Resources:

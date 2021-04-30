@@ -7,35 +7,39 @@ const Constants = require('./utilities/constants.js');
  * Entry function for Crypto Delta Notification process.
  * @param {JSON} event AWS metadata and information associated with Lambda invokation
  */
-module.exports.handler = async (event) => {
-  Constants.CURRENCY_PAIRS.forEach((currencyPair) => {
-    var currentPrice, historicPrice;
-    const currentPricePromise = coinbaseUtils.getCurrentPrice(currencyPair)
-      .then(price => {
-        currentPrice = parseFloat(price);
-        console.debug(`${currencyPair} Current Price: ${currentPrice}`)
-      });
+module.exports.handler = async (event, context) => {
+  //Wrap everything in a promise so lambda waits for execution to complete
+  const promise = new Promise(function (resolve, reject) {
+    Constants.CURRENCY_PAIRS.forEach((currencyPair) => {
+      var currentPrice, historicPrice;
+      const currentPricePromise = coinbaseUtils.getCurrentPrice(currencyPair)
+        .then(price => {
+          currentPrice = parseFloat(price);
+          console.info(`${currencyPair} Current Price: ${currentPrice}`)
+        });
 
-    const historicPricePromise = 
-      coinbaseUtils.getHistoricPrice(currencyPair, Constants.LOOK_BACK_IN_MINUTES)
-      .then(price => {
-        historicPrice = price;
-        console.debug(`${currencyPair} Historic Price (${Constants.LOOK_BACK_IN_MINUTES} minutes back): ${historicPrice}`);
-      });
+      const historicPricePromise =
+        coinbaseUtils.getHistoricPrice(currencyPair, Constants.LOOK_BACK_IN_MINUTES)
+          .then(price => {
+            historicPrice = price;
+            console.info(`${currencyPair} Historic Price (${Constants.LOOK_BACK_IN_MINUTES} minutes back): ${historicPrice}`);
+          });
 
-    Promise.all([currentPricePromise, historicPricePromise]).then(() => {
-      var priceDelta = (getCurrentPriceDelta(currentPrice, historicPrice) * 100).toFixed(2);
-      if (shouldSendNotification(currentPrice, historicPrice, Constants.DELTA_THRESHOLD_PERCENTAGE)) {
-        console.debug(`${currencyPair} Price Delta: ${priceDelta}%`)
-        const message = cryptoNotificationFactory.buildMessage(currencyPair, priceDelta, currentPrice, historicPrice);
-        const subject = cryptoNotificationFactory.buildSubject(currencyPair);
+      Promise.all([currentPricePromise, historicPricePromise]).then(() => {
+        var priceDelta = (getCurrentPriceDelta(currentPrice, historicPrice) * 100).toFixed(2);
+        if (shouldSendNotification(currentPrice, historicPrice, Constants.DELTA_THRESHOLD_PERCENTAGE)) {
+          console.info(`${currencyPair} Price Delta: ${priceDelta}%`)
+          const message = cryptoNotificationFactory.buildMessage(currencyPair, priceDelta, currentPrice, historicPrice);
+          const subject = cryptoNotificationFactory.buildSubject(currencyPair);
 
-        snsUtils.sendDeltaNotification(subject, message, Constants.NOTIFICATION_TOPIC_ARN);
-      } else {
-        console.debug(`${currencyPair} Notification NOT Sent! Delta: ${priceDelta}%`)
-      }
-    })
+          snsUtils.sendDeltaNotification(subject, message, Constants.NOTIFICATION_TOPIC_ARN);
+        } else {
+          console.info(`${currencyPair} Notification NOT Sent! Delta: ${priceDelta}%`)
+        }
+      })
+    });
   });
+  return promise;
 }
 
 /**
