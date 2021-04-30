@@ -1,3 +1,6 @@
+layer/nodejs/node_modules/*
 node_modules/*
 .vscode/*
 .serverless/*
+
+package-lock.json

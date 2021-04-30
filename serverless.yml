@@ -1,6 +1,6 @@
 service: crypto-notification
 
-frameworkVersion: '2'
+frameworkVersion: "2"
 
 provider:
   name: aws
@@ -16,25 +16,32 @@ provider:
         - Effect: "Allow"
           Action:
             - "sns:Publish"
-          Resource: "*"
+          Resource: "arn:aws:sns:us-east-1:${self.custom.accountId}:${self.resources.Resources.CrpytoNotificationTopic.Properties.TopicName}"
+
+custom:
+  accountId: 859700905691
 
 layers:
-  nodemodules:
-    path: node_modules
+  nodeModules:
+    path: layer
 
 package:
   patterns:
-    - 'src/**'
-    - '!package**'
-    - '!README.md'
+    - "src/**"
+    - "!layer/**"
+    - "!node_modules/**"
+    - "!package**"
+    - "!README.md"
 
 functions:
   deltachecker:
-    handler: src/deltachecker.handler
+    handler: src/delta_checker.handler
     layers:
-      - {Ref: NodemodulesLambdaLayer}
+      - {Ref: NodeModulesLambdaLayer}
     events:
       - schedule: rate(10 minutes)
+    environment:
+      NOTIFICATION_TOPIC_ARN: "arn:aws:sns:us-east-1:${self.custom.accountId}:${self.resources.Resources.CrpytoNotificationTopic.Properties.TopicName}"
 
 resources:
   Resources:
@@ -42,9 +49,3 @@ resources:
       Type: AWS::SNS::Topic
       Properties:
         TopicName: CrpytoNotificationTopic
-  # Outputs:
-  #   NodemodulesLambdaLayer:
-  #       Value:
-  #         Ref: NodemodulesLambdaLayer
-  #       Export:
-  #         Name: NodemodulesLambdaLayer

@@ -1,13 +1,20 @@
+
+const Constants = require('./constants');
+
 const AWS = require('aws-sdk');
+AWS.config.update({ region: Constants.AWS_REGION });
 const SNS = new AWS.SNS();
 
-module.exports.sendDeltaNotification = function(currencyPair, deltaThreshold, currentPriceDelta, currentPrice, historicPrice) {
-  const message = `${currencyPair} delta >= ${deltaThreshold}%!\n\nDelta: ${currentPriceDelta}%\nCurrent Price: ${currentPrice}\nHistoric Price: ${historicPrice}`;
-  
-  var params = {
+/**
+ * Send publish notification to Amazon SNS Topic.
+ * @param {String} subject title of message, might not be seen on all devices
+ * @param {String} message text blob of general information to share
+ * @param {String} topicArn Destination Topic ARN of message
+ */
+module.exports.sendDeltaNotification = function (subject, message, topicArn) {
+  SNS.publish({
+    Subject: subject,
     Message: message,
-    Subject: `Crypto Delta Notification for ${currencyPair}`
-    //TopicArn: "arn:aws:sns:us-west-2:123456789012:test-topic1"
-  };
-  SNS.publish(params, context.done);
+    TopicArn: topicArn
+  }).promise();
 }
